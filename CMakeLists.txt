@@ -1,5 +1,16 @@
 project(libunwind)
 
+# Add this right after project() declaration
+if(ANDROID)
+    # Disable Windows-specific files
+    list(REMOVE_ITEM SOURCES 
+        src/remote/win/missing-functions.c
+        src/remote/win/win.c
+    )
+    # Android-specific defines
+    add_definitions(-DNO_LINK_H -DHAVE_MMAP=0 -DHAVE_DL_ITERATE_PHDR=0)
+endif()
+
 cmake_minimum_required(VERSION 3.16.1)
 
 set(CMAKE_C_STANDARD 11)
