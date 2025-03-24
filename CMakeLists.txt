@@ -12,6 +12,21 @@ set(PACKAGE_BUGREPORT "")
 
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
+# Add this near the top, after project()
+if(ANDROID)
+    add_definitions(-DNO_LINK_H -DHAVE_MMAP=0)
+    set(HAVE_ELF_H 1)
+endif()
+
+# Modify source file selection
+if(NOT ANDROID AND NOT MSVC)
+    # Only include Windows-specific files for Windows builds
+    list(REMOVE_ITEM SOURCES 
+        src/remote/win/missing-functions.c
+        src/remote/win/win.c
+    )
+endif()
+
 # Android-specific configuration
 if(ANDROID)
     if(ANDROID_ABI STREQUAL "armeabi-v7a")
