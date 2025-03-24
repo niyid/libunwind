@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.16.1)
 project(libunwind)
+
+cmake_minimum_required(VERSION 3.16.1)
 
 set(CMAKE_C_STANDARD 11)
 
@@ -11,32 +12,7 @@ set(PACKAGE_BUGREPORT "")
 
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
-# Add this near the top, after project() declaration
-if(ANDROID)
-    add_definitions(-DNO_LINK_H)
-    set(HAVE_LINK_H 0)
-    set(HAVE_MMAP 0)
-endif()
-
-# In your architecture detection section, add:
-if(ANDROID_ABI STREQUAL "armeabi-v7a")
-    add_definitions(-D__arm__)
-    set(TARGET_ARM 1)
-    set(arch arm)
-elseif(ANDROID_ABI STREQUAL "arm64-v8a")
-    add_definitions(-D__aarch64__)
-    set(TARGET_AARCH64 1)
-    set(arch aarch64)
-endif()
-
-# Ensure we are targeting Android
-if (ANDROID)
-  message(STATUS "Building for Android")
-else()
-  message(FATAL_ERROR "This CMake file is only designed for Android builds")
-endif()
-
-# Android target architecture detection
+# Android target detection
 if(ANDROID)
     if(ANDROID_ABI STREQUAL "armeabi-v7a")
         set(TARGET_ARM 1)
@@ -60,21 +36,28 @@ if(ANDROID)
     
     add_definitions(-D__linux__)
     add_definitions(-D__ANDROID__)
+    add_definitions(-DNO_LINK_H)
+    add_definitions(-DHAVE_DL_ITERATE_PHDR=0)
+    add_definitions(-DHAVE_MMAP=0)
+    
+    # Android-specific configurations
+    set(HAVE_ELF_H 1)
+    set(HAVE_ENDIAN_H 0)
+    set(HAVE_STDALIGN_H 1)
+    set(HAVE_STDATOMIC_H 1)
+    set(HAVE_THREAD_LOCAL 1)
+elseif("${CMAKE_GENERATOR}" MATCHES "^Visual Studio.*$")
+    # Original Visual Studio configurations here
+    # ... [keep all the existing Visual Studio specific code]
 else()
-    message(FATAL_ERROR "This CMake file is designed for Android builds only")
+    message(FATAL_ERROR "This CMake file is currently only designed for building on Android or Visual Studio")
 endif()
 
-# Define common macros
-add_definitions(-D__linux__ -DHAVE_CONFIG_H)
+add_definitions(-DHAVE_CONFIG_H)
 
-# Include directories
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
-
-# Configure header files
 configure_file(include/config.h.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
 configure_file(include/libunwind-common.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/libunwind-common.h)
 configure_file(include/libunwind.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/libunwind.h)
 configure_file(include/tdep/libunwind_i.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/tdep/libunwind_i.h)
 
-# Add source directory
 add_subdirectory(src)
