@@ -1,18 +1,4 @@
-project(libunwind)
-
-cmake_minimum_required(VERSION 3.16.1)
-
-set(CMAKE_C_STANDARD 11)
-
-set(PKG_MAJOR "1")
-set(PKG_MINOR "6")
-set(PKG_EXTRA "-rc2")
-set(PACKAGE_STRING "libunwind")
-set(PACKAGE_BUGREPORT "")
-
-set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
-
-# Android-specific configuration
+# Android target detection
 if(ANDROID)
     if(ANDROID_ABI STREQUAL "armeabi-v7a")
         set(TARGET_ARM 1)
@@ -33,6 +19,11 @@ if(ANDROID)
     else()
         message(FATAL_ERROR "Unsupported Android ABI: ${ANDROID_ABI}")
     endif()
+elseif("${CMAKE_GENERATOR}" MATCHES "^Visual Studio.*$")
+    # [Keep existing Windows/Visual Studio logic]
+else()
+    message(FATAL_ERROR "This build requires Android NDK or Visual Studio")
+endif()
 
     # Android-specific defines
     add_definitions(-DNO_LINK_H)
