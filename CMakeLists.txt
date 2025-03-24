@@ -1,5 +1,20 @@
 project(libunwind)
 
+# Add this after project() declaration
+if(ANDROID)
+    # Remove Windows-specific sources
+    file(GLOB WIN_SOURCES "src/remote/win/*.c")
+    list(REMOVE_ITEM LIBUNWIND_SOURCES ${WIN_SOURCES})
+    
+    # Android-specific workarounds
+    add_definitions(
+        -DNO_LINK_H
+        -DHAVE_MMAP=0
+        -DHAVE_DL_ITERATE_PHDR=0
+    )
+    set(HAVE_LINK_H 0)
+endif()
+
 # Add this right after project() declaration
 if(ANDROID)
     # Disable Windows-specific files
