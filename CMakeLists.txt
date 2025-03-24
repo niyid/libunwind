@@ -11,6 +11,24 @@ set(PACKAGE_BUGREPORT "")
 
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
+# Add this near the top, after project() declaration
+if(ANDROID)
+    add_definitions(-DNO_LINK_H)
+    set(HAVE_LINK_H 0)
+    set(HAVE_MMAP 0)
+endif()
+
+# In your architecture detection section, add:
+if(ANDROID_ABI STREQUAL "armeabi-v7a")
+    add_definitions(-D__arm__)
+    set(TARGET_ARM 1)
+    set(arch arm)
+elseif(ANDROID_ABI STREQUAL "arm64-v8a")
+    add_definitions(-D__aarch64__)
+    set(TARGET_AARCH64 1)
+    set(arch aarch64)
+endif()
+
 # Ensure we are targeting Android
 if (ANDROID)
   message(STATUS "Building for Android")
